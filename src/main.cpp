@@ -6,7 +6,7 @@
 /*   By: jyap <jyap@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/15 21:15:59 by jyap              #+#    #+#             */
-/*   Updated: 2024/12/15 22:02:23 by jyap             ###   ########.fr       */
+/*   Updated: 2024/12/25 19:30:49 by jyap             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,32 +16,40 @@
 // Handles SIGPIPE signals to prevent program termination.
 // If a client disconnects while the server is writing data, SIGPIPE would
 // terminate the server unexpectedly, leading to downtime.
-void sigpipeHandle(int sig) { if(sig) {}}
+void handleSigpipe(int sig)
+{ 
+	if(sig) {}
+}
 
-int main(int argc, char **argv)
+std::string getConfigFilePath(int argc, char** argv)
 {
 	if (argc > 2)
 	{
 		Logger::logMsg(RED, "Error: Wrong number of arguments.");
-		return (1);
+		Logger::logMsg(RED, "Usage: ./webserv or ./webserv [config file path]");
+		throw std::invalid_argument("Invalid arguments.");
 	}
+	return ((argc == 1) ? "configs/default.conf" : argv[1]);
+}
+
+int main(int argc, char **argv)
+{
 	try 
 	{
-		signal(SIGPIPE, sigpipeHandle);
-		// configuration file as argument or default path
-		std::string config = (argc == 1 ? "configs/default.conf" : argv[1]);
+		signal(SIGPIPE, handleSigpipe);
+		//Get config file path
+		std::string configFilePath = getConfigFilePath(argc, argv);
 		//Parse config file for servers
-		ConfigParser	cluster;
-		cluster.createCluster(config);
-		// cluster.print(); // for checking
-		// Setup and run servers based on config info
-		ServerManager 	master;
-		master.setupServers(cluster.getServers());
-		master.runServers();
+		ConfigParser	configParser;
+		configParser.createCluster(configFilePath);
+		// Setup and run servers
+		ServerManager 	serverManager;
+		serverManager.setupServers(configParser.getServers());
+		serverManager.runServers();
 	}
 	catch (std::exception &e)
 	{
-		std::cerr << e.what() << std::endl;
+		std::cerr << "Error: " << e.what() << std::endl;
 		return (1);
 	}
 	return (0);

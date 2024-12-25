@@ -6,7 +6,7 @@
 /*   By: jyap <jyap@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/15 21:42:36 by jyap              #+#    #+#             */
-/*   Updated: 2024/12/15 22:11:42 by jyap             ###   ########.fr       */
+/*   Updated: 2024/12/25 19:47:12 by jyap             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,7 @@
 #define LOGGER_HPP
 
 # include "Webserv.hpp"
+# include <pthread.h>
 
 #define RESET			"\x1B[0m"
 #define RED				"\x1B[31m"
@@ -30,8 +31,15 @@
 class Logger
 {
 	public:
+		//Static methods for logging and retrieve time
 		static void			logMsg(const char *, const char*, ...);
 		static std::string	getCurrTime();
+	private:
+		//Prevent instantiation and copying
+		Logger();
+		Logger(const Logger&);
+		Logger &operator=(const Logger&);
+		static pthread_mutex_t logMutex; //Mutext for thread-safe logging
 };
 
 #endif
