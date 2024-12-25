@@ -67,7 +67,7 @@ class HttpRequest
         HttpMethod                                  &getMethod();
         std::string                                 &getPath();
         std::string                                 &getQuery();
-        std::string                                 getHeader(std::string const &);
+        std::string                                 getHeader(const std::string &);
 		const std::map<std::string, std::string>    &getHeaders() const;
 		std::string                                 getMethodStr();
         std::string                                 &getBody();

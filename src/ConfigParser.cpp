@@ -6,7 +6,7 @@
 /*   By: jyap <jyap@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/21 18:12:30 by jyap              #+#    #+#             */
-/*   Updated: 2024/12/21 22:11:20 by jyap             ###   ########.fr       */
+/*   Updated: 2024/12/25 20:29:03 by jyap             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -74,7 +74,7 @@ int ConfigParser::createCluster(const std::string &config_file)
 	std::string		content;
 	ConfigFile		file(config_file);
 
-	if (file.getTypePath(file.getPath()) != 1)
+	if (file.getPathType(file.getPath()) != IS_FILE)
 		throw ErrorException("File is invalid");
 	if (file.checkFile(file.getPath(), R_OK) == -1)
 		throw ErrorException("File is not accessible");

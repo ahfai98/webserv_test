@@ -6,7 +6,7 @@
 /*   By: jyap <jyap@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/16 13:40:38 by jyap              #+#    #+#             */
-/*   Updated: 2024/12/16 20:26:45 by jyap             ###   ########.fr       */
+/*   Updated: 2024/12/25 20:29:24 by jyap             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,23 +15,30 @@
 
 #include "Webserv.hpp"
 
+enum PathType
+{
+	IS_FILE = 1,
+	IS_DIRECTORY = 2,
+	IS_OTHER = 3,
+	STATFAIL = -1
+};
+
 class ConfigFile
 {
 	private:
 		std::string		_path;
-		size_t			_size;
 
 	public:
 		ConfigFile();
-		ConfigFile(std::string const path);
+		ConfigFile(const std::string &path);
 		~ConfigFile();
 
-		static int getTypePath(std::string const path);
-		static int checkFile(std::string const path, int mode);
-		std::string	readFile(std::string path);
-		static int fileExistReadable(std::string const path, std::string const index);
+		static PathType getPathType(const std::string &path);
+		static int checkFile(const std::string &path, int mode);
+		std::string	readFile(const std::string &path);
+		static int fileExistReadable(const std::string &path, const std::string &index);
 
-		std::string getPath();
+		std::string getPath() const;
 };
 
 #endif

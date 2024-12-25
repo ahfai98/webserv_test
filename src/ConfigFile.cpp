@@ -6,64 +6,62 @@
 /*   By: jyap <jyap@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/16 13:44:39 by jyap              #+#    #+#             */
-/*   Updated: 2024/12/16 22:34:17 by jyap             ###   ########.fr       */
+/*   Updated: 2024/12/25 20:29:24 by jyap             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../inc/ConfigFile.hpp"
 
-ConfigFile::ConfigFile(): _size(0){}
+ConfigFile::ConfigFile(){}
 
-ConfigFile::ConfigFile(std::string const path): _path(path), _size(0){}
+ConfigFile::ConfigFile(const std::string &path): _path(path) {}
 
 ConfigFile::~ConfigFile(){}
 
 // Check path is file, directory or other
-int ConfigFile::getTypePath(std::string const path)
+PathType ConfigFile::getPathType(const std::string &path)
 {
 	struct stat	file_stat;
 
 	if (stat(path.c_str(), &file_stat) == 0)
 	{
 		if (file_stat.st_mode & S_IFREG) // File
-			return (1);
+			return (IS_FILE);
 		else if (file_stat.st_mode & S_IFDIR) // Directory
-			return (2);
+			return (IS_DIRECTORY);
 		else // Other types (symlink, socket, etc.)
-			return (3);
+			return (IS_OTHER);
 	}
-	else
-	{
-		return (-1); // stat failed
-	}
+	return (STATFAIL); // stat failed
 }
 
 // Check file is accessible with the mode (F_OK, R_OK, W_OK, X_OK)
 //Mode: File exist, read, write, execute permissions
 //Returns 0 if accessible, else -1
-int	ConfigFile::checkFile(std::string const path, int mode)
+int	ConfigFile::checkFile(const std::string &path, int mode)
 {
 	return (access(path.c_str(), mode));
 }
 
-//Check file exist and readable for two locations(index or path+index)
-int ConfigFile::fileExistReadable(std::string const path, std::string const index)
+//Check file exists and is readable for two locations(index or path+index)
+int ConfigFile::fileExistReadable(const std::string &path, const std::string &index)
 {
-	if (getTypePath(index) == 1 && checkFile(index, R_OK) == 0)
-		return (0);
-	if (getTypePath(path + index) == 1 && checkFile(path + index, R_OK) == 0)
+	std::string fullPath1 = index;
+	std::string fullPath2 = path + index;
+	if ((getPathType(fullPath1) == IS_FILE && checkFile(fullPath1, R_OK) == 0) ||
+		(getPathType(fullPath2) == IS_FILE && checkFile(fullPath2, R_OK) == 0))
 		return (0);
 	return (-1);
 }
 
 //Read file contents into string
-std::string ConfigFile::readFile(std::string path)
+std::string ConfigFile::readFile(const std::string &path)
 {
 	if (path.empty())
 		return (NULL);
 	// Open the file in read mode
 	std::ifstream config_file(path.c_str());
-	if (!config_file.is_open()) 
+	if (!config_file) 
 		return (NULL);
 	// Read the file into a string
 	std::stringstream ss;
@@ -72,7 +70,7 @@ std::string ConfigFile::readFile(std::string path)
 }
 
 /* Get functions */
-std::string ConfigFile::getPath()
+std::string ConfigFile::getPath() const
 {
 	return (this->_path);
 }

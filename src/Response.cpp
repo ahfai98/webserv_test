@@ -205,7 +205,7 @@ int        Response::handleCgi(std::string &location_key)
         _code = 501;
         return (1);
     }
-    if (ConfigFile::getTypePath(path) != 1)
+    if (ConfigFile::getPathType(path) != IS_FILE)
     {
         _code = 404;
         return (1);

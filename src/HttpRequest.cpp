@@ -657,7 +657,7 @@ std::string &HttpRequest::getQuery()
     return (_query);
 }
 
-std::string HttpRequest::getHeader(std::string const &name)
+std::string HttpRequest::getHeader(const std::string &name)
 {
     return (_request_headers[name]);
 }

@@ -6,7 +6,7 @@
 /*   By: jyap <jyap@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/15 22:58:25 by jyap              #+#    #+#             */
-/*   Updated: 2024/12/15 23:37:36 by jyap             ###   ########.fr       */
+/*   Updated: 2024/12/25 20:29:15 by jyap             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -63,7 +63,7 @@ void Location::setPath(std::string parameter)
 
 void Location::setRootLocation(std::string parameter)
 {
-	if (ConfigFile::getTypePath(parameter) != 2)
+	if (ConfigFile::getPathType(parameter) != IS_DIRECTORY)
 		throw ServerConfig::ErrorException("Wrong root of location: " + parameter);
 	this->_root = parameter;
 }

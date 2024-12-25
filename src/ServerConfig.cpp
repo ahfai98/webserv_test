@@ -6,7 +6,7 @@
 /*   By: jyap <jyap@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/16 20:24:55 by jyap              #+#    #+#             */
-/*   Updated: 2024/12/22 22:14:49 by jyap             ###   ########.fr       */
+/*   Updated: 2024/12/25 20:29:15 by jyap             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -98,7 +98,7 @@ void ServerConfig::setHost(std::string parameter)
 void ServerConfig::setRoot(std::string root)
 {
 	checkToken(root);
-	if (ConfigFile::getTypePath(root) == 2)
+	if (ConfigFile::getPathType(root) == IS_DIRECTORY)
 	{
 		this->_root = root;
 		return ;
@@ -106,7 +106,7 @@ void ServerConfig::setRoot(std::string root)
 	char dir[PATH_MAX];
 	getcwd(dir, PATH_MAX);
 	std::string full_root = dir + root;
-	if (ConfigFile::getTypePath(full_root) != 2)
+	if (ConfigFile::getPathType(full_root) != IS_DIRECTORY)
 		throw ErrorException("Wrong syntax for root: " + root);
 	this->_root = full_root;
 }
@@ -179,9 +179,9 @@ void ServerConfig::setErrorPages(std::vector<std::string> &parameter)
 		i++; //Move to the next string which is the path to the error page
 		std::string path = parameter[i];
 		checkToken(path);
-		if (ConfigFile::getTypePath(path) == 2) //If path is directory
+		if (ConfigFile::getPathType(path) == IS_DIRECTORY) //If path is directory
 			throw ErrorException ("Incorrect path for error page file: " + path);
-		if (ConfigFile::getTypePath(this->_root + path) != 1) //If path is not file
+		if (ConfigFile::getPathType(this->_root + path) != IS_FILE) //If path is not file
 			throw ErrorException ("Incorrect path for error page file: " + this->_root + path);
 		// If path does not exist or is not accessible
 		if (ConfigFile::checkFile(this->_root + path, F_OK) == -1 || ConfigFile::checkFile(this->_root + path, R_OK) == -1)
@@ -213,7 +213,7 @@ void ServerConfig::setLocation(std::string path, std::vector<std::string> parame
 			if (!new_location.getRootLocation().empty()) //check if root is already set
 				throw ErrorException("Root of location is duplicated");
 			checkToken(parameter[++i]);
-			if (ConfigFile::getTypePath(parameter[i]) == 2) //if directory
+			if (ConfigFile::getPathType(parameter[i]) == IS_DIRECTORY) //if directory
 				new_location.setRootLocation(parameter[i]);
 			else
 				new_location.setRootLocation(this->_root + parameter[i]); //if not directory
@@ -390,13 +390,13 @@ int ServerConfig::isValidLocation(Location &location) const
 		{
 			//use location's root or cwd and combine with path to get Index location
 			std::string path = location.getRootLocation() + location.getPath() + "/" + location.getIndexLocation();
-			if (ConfigFile::getTypePath(path) != 1)
+			if (ConfigFile::getPathType(path) != IS_FILE)
 			{				
 				std::string root = getcwd(NULL, 0);
 				location.setRootLocation(root);
 				path = root + location.getPath() + "/" + location.getIndexLocation();
 			}
-			if (path.empty() || ConfigFile::getTypePath(path) != 1 || ConfigFile::checkFile(path, R_OK) < 0)
+			if (path.empty() || ConfigFile::getPathType(path) != IS_FILE || ConfigFile::checkFile(path, R_OK) < 0)
 				return (1);
 		}
 		// check if the number of Cgi paths matches with number of extensions
@@ -405,7 +405,7 @@ int ServerConfig::isValidLocation(Location &location) const
 		std::vector<std::string>::const_iterator it;
 		for (it = location.getCgiPath().begin(); it != location.getCgiPath().end(); ++it)
 		{
-			if (ConfigFile::getTypePath(*it) < 0)
+			if (ConfigFile::getPathType(*it) == STATFAIL)
 				return (1);
 		}
 		std::vector<std::string>::const_iterator it_path;

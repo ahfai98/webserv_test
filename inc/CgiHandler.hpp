@@ -6,7 +6,7 @@
 /*   By: jyap <jyap@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/22 21:56:57 by jyap              #+#    #+#             */
-/*   Updated: 2024/12/22 21:56:58 by jyap             ###   ########.fr       */
+/*   Updated: 2024/12/25 19:58:29 by jyap             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,8 +32,8 @@ class CgiHandler {
 		CgiHandler();
 		CgiHandler(std::string path);
 		~CgiHandler();
-		CgiHandler(CgiHandler const &other);
-		CgiHandler &operator=(CgiHandler const &rhs);
+		CgiHandler(const CgiHandler &other);
+		CgiHandler &operator=(const CgiHandler &rhs);
 
 		void initEnv(HttpRequest& req, const std::vector<Location>::iterator it_loc);
 		void initEnvCgi(HttpRequest& req, const std::vector<Location>::iterator it_loc);
