@@ -1,7 +1,5 @@
 # include "../inc/Response.hpp"
 
-Mime Response::_mime;
-
 Response::Response()
 {
     _target_file = "";
@@ -35,9 +33,9 @@ void   Response::contentType()
 {
     _response_content.append("Content-Type: ");
     if(_target_file.rfind(".", std::string::npos) != std::string::npos && _code == 200)
-        _response_content.append(_mime.getMimeType(_target_file.substr(_target_file.rfind(".", std::string::npos))) );
+        _response_content.append(Mime::getMimeType(_target_file.substr(_target_file.rfind(".", std::string::npos))) );
     else
-        _response_content.append(_mime.getMimeType("default"));
+        _response_content.append(Mime::getMimeType("default"));
     _response_content.append("\r\n");
 }
 

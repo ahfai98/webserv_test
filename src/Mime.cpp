@@ -6,7 +6,7 @@
 /*   By: jyap <jyap@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/16 11:20:32 by jyap              #+#    #+#             */
-/*   Updated: 2024/12/16 11:40:41 by jyap             ###   ########.fr       */
+/*   Updated: 2024/12/25 20:48:54 by jyap             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,8 +16,12 @@
 // Maps file extensions to MIME types
 // Format of MIME is type/subtype (like text/html)
 // Tells browser/recipient how to handle the file/data
+
+std::map<std::string, std::string> Mime::_mime_types;
+
 Mime::Mime()
 {
+	// Manually insert MIME types
 	_mime_types[".html"] = "text/html";
 	_mime_types[".htm"] = "text/html";
 	_mime_types[".css"] = "text/css";
@@ -56,12 +60,12 @@ std::string Mime::toLower(const std::string &str)
 	return (result);
 }
 
-std::string Mime::getMimeType(std::string extension)
+std::string Mime::getMimeType(const std::string &extension)
 {
-	extension = Mime::toLower(extension);
-	if (_mime_types.count(extension))
-		return (_mime_types[extension]);
-	std::cerr << "Unknown MIME type for extension: " << extension << std::endl;
+	std::string ext = Mime::toLower(extension);
+	if (_mime_types.count(ext))
+		return (_mime_types[ext]);
+	std::cerr << "Unknown MIME type for extension: " << ext << std::endl;
 	std::cerr << "Using default MIME type: text/html" << std::endl;
-	 return (_mime_types["default"]);
+	return (_mime_types["default"]);
 }
