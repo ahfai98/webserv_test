@@ -6,7 +6,7 @@
 /*   By: jyap <jyap@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/21 18:12:30 by jyap              #+#    #+#             */
-/*   Updated: 2024/12/25 20:29:03 by jyap             ###   ########.fr       */
+/*   Updated: 2024/12/25 22:07:54 by jyap             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -72,13 +72,12 @@ int ConfigParser::print()
 int ConfigParser::createCluster(const std::string &config_file)
 {
 	std::string		content;
-	ConfigFile		file(config_file);
 
-	if (file.getPathType(file.getPath()) != IS_FILE)
+	if (getPathType(config_file) != IS_FILE)
 		throw ErrorException("File is invalid");
-	if (file.checkFile(file.getPath(), R_OK) == -1)
+	if (checkFile(config_file, R_OK) == -1)
 		throw ErrorException("File is not accessible");
-	content = file.readFile(config_file);
+	content = readFile(config_file);
 	if (content.empty())
 		throw ErrorException("File is empty");
 	removeComments(content);
@@ -315,7 +314,7 @@ void ConfigParser::createServer(std::string &config, ServerConfig &server)
 		server.setHost("localhost;");
 	if (server.getIndex().empty())
 		server.setIndex("index.html;");
-	if (ConfigFile::fileExistReadable(server.getRoot(), server.getIndex()))
+	if (fileExistReadable(server.getRoot(), server.getIndex()))
 		throw ErrorException("Index from config file not found or unreadable");
 	if (server.checkLocationsDup())
 		throw ErrorException("Location is duplicated");

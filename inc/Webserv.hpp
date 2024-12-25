@@ -6,7 +6,7 @@
 /*   By: jyap <jyap@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/16 11:42:54 by jyap              #+#    #+#             */
-/*   Updated: 2024/12/16 12:10:04 by jyap             ###   ########.fr       */
+/*   Updated: 2024/12/25 22:06:33 by jyap             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,7 +46,6 @@
 # include <arpa/inet.h> //inet_ntoa, inet_pton
 
 # include "ConfigParser.hpp"
-# include "ConfigFile.hpp"
 # include "ServerConfig.hpp"
 # include "Location.hpp"
 # include "HttpRequest.hpp"
@@ -69,11 +68,23 @@ std::string toString(const T val)
 	return (stream.str());
 }
 
+enum PathType
+{
+	IS_FILE = 1,
+	IS_DIRECTORY = 2,
+	IS_OTHER = 3,
+	STATFAIL = -1
+};
+
 /* Utils.c */
 std::string statusCodeString(short);
 std::string getErrorPage(short);
 int buildHtmlIndex(std::string &, std::vector<uint8_t> &, size_t &);
 int ft_stoi(std::string str);
 unsigned int fromHexToDec(const std::string& nb);
+PathType getPathType(const std::string &path);
+int checkFile(const std::string &path, int mode);
+std::string	readFile(const std::string &path);
+int fileExistReadable(const std::string &path, const std::string &index);
 
 #endif

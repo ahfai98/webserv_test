@@ -203,12 +203,12 @@ int        Response::handleCgi(std::string &location_key)
         _code = 501;
         return (1);
     }
-    if (ConfigFile::getPathType(path) != IS_FILE)
+    if (getPathType(path) != IS_FILE)
     {
         _code = 404;
         return (1);
     }
-    if (ConfigFile::checkFile(path, X_OK) == -1 || ConfigFile::checkFile(path, 3) == -1)
+    if (checkFile(path, X_OK) == -1 || checkFile(path, 3) == -1)
     {
         _code = 403;
         return (1);

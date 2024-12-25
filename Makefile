@@ -6,7 +6,7 @@
 #    By: jyap <jyap@student.42.fr>                  +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/12/15 20:51:19 by jyap              #+#    #+#              #
-#    Updated: 2024/12/15 21:12:19 by jyap             ###   ########.fr        #
+#    Updated: 2024/12/25 22:07:00 by jyap             ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -24,7 +24,6 @@ SRC_FILES = main.cpp \
 			Response.cpp \
 			Client.cpp \
 			HttpRequest.cpp \
-			ConfigFile.cpp \
 			ConfigParser.cpp \
 			ServerConfig.cpp \
 			Location.cpp \
