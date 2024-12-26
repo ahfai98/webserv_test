@@ -6,7 +6,7 @@
 /*   By: jyap <jyap@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/16 11:42:54 by jyap              #+#    #+#             */
-/*   Updated: 2024/12/25 22:06:33 by jyap             ###   ########.fr       */
+/*   Updated: 2024/12/26 12:05:38 by jyap             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,6 +52,7 @@
 # include "CgiHandler.hpp"
 # include "Mime.hpp"
 # include "Logger.hpp"
+# include "IPRange.hpp"
 
 
 #define CONNECTION_TIMEOUT 60 // Time in seconds for a client to disconnect due to inactivity
@@ -86,5 +87,9 @@ PathType getPathType(const std::string &path);
 int checkFile(const std::string &path, int mode);
 std::string	readFile(const std::string &path);
 int fileExistReadable(const std::string &path, const std::string &index);
+
+bool	checkdigits(std::string &str);
+bool isValidIP(const std::string &ip_addr);
+bool	parseAllowDenyString(const std::string &input, Location &location, const char *mode);
 
 #endif

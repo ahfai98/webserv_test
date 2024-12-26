@@ -6,7 +6,7 @@
 /*   By: jyap <jyap@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/16 12:11:53 by jyap              #+#    #+#             */
-/*   Updated: 2024/12/25 22:07:54 by jyap             ###   ########.fr       */
+/*   Updated: 2024/12/26 12:14:10 by jyap             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -304,4 +304,107 @@ std::string readFile(const std::string &path)
 	std::stringstream ss;
 	ss << config_file.rdbuf();
 	return (ss.str());
+}
+
+bool checkdigits(std::string &str)
+{
+	for (std::string::size_type i = 0; i < str.size(); ++i)
+	{
+		if (!isdigit(str[i]))  // Check each character if it's not a digit
+			return (false);
+	}
+	return (true);
+}
+
+bool isValidIP(const std::string &ip_addr)
+{
+	size_t dots = 0;
+	size_t last_pos = 0;
+	size_t slash_pos = ip_addr.find('/');
+
+	if (slash_pos != std::string::npos)
+	{
+		// If there's a '/', separate the IP address and prefix
+		std::string ip_part = ip_addr.substr(0, slash_pos);
+		std::string prefix_part = ip_addr.substr(slash_pos + 1);
+
+		// Validate the IP part
+		if (!isValidIP(ip_part))
+			return (false);
+
+		// Validate the prefix length
+		if (!checkdigits(prefix_part))
+			return (false);
+		int prefix = atoi(prefix_part.c_str());
+		if (prefix < 0 || prefix > 32)
+			return (false);
+
+		return (true); // Valid CIDR notation
+	}
+
+	for (size_t i = 0; i < ip_addr.size(); ++i)
+	{
+		if (ip_addr[i] == '.')
+		{
+			if (i == last_pos || i - last_pos > 3 || dots > 3)
+				return (false);
+			std::string segment = ip_addr.substr(last_pos, i - last_pos);
+			if (!checkdigits(segment))
+				return (false);
+			int value = atoi(segment.c_str());
+			if (value < 0 || value > 255)
+				return (false);
+			last_pos = i + 1;
+			dots++;
+		}
+	}
+
+	// Validate last segment as there is no 4th dot in IP address IPv4
+	if (dots != 3 || last_pos >= ip_addr.size())
+		return (false);
+	std::string last_segment = ip_addr.substr(last_pos);
+	int value = atoi(last_segment.c_str());
+	if (!checkdigits(last_segment))
+		return (false);
+	return (value >= 0 && value <= 255);
+}
+
+bool	parseAllowDenyString(const std::string &input, Location &location, const char *mode)
+{
+	// First, split the string based on commas
+	std::stringstream ss(input);
+	std::string token;
+	
+	while (std::getline(ss, token, ','))
+	{
+		// Trim spaces before and after the token
+		token.erase(0, token.find_first_not_of(" \t"));
+		token.erase(token.find_last_not_of(" \t") + 1);
+
+		// If the token is empty, or only contains spaces, it's invalid
+		if (token.empty())
+		{
+			std::cerr << "Invalid token: Empty token after comma or input starts/ends with a comma" << std::endl;
+			return(false);
+		}
+
+		// Check if the token is a valid IP address format (basic validation)
+		if (!isValidIP(token))
+		{
+			std::cerr << "Invalid token: " << token << " is not a valid IP address" << std::endl;
+			return(false);
+		}
+
+		// If the token is valid, create an IPRange object and add it to the vector
+		if (strcmp(mode, "allow") == 0)
+			location.appendAllowIP(IPRange(token));
+		else if (strcmp(mode, "deny") == 0)
+			location.appendDenyIP(IPRange(token));
+		else
+		{
+			std::cerr << "Allow/Deny mode is incorrect" << std::endl;
+			return(false);
+		}
+	}
+	return (true);
 }

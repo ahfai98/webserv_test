@@ -6,7 +6,7 @@
 #    By: jyap <jyap@student.42.fr>                  +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/12/15 20:51:19 by jyap              #+#    #+#              #
-#    Updated: 2024/12/25 22:07:00 by jyap             ###   ########.fr        #
+#    Updated: 2024/12/25 22:38:44 by jyap             ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -29,7 +29,8 @@ SRC_FILES = main.cpp \
 			Location.cpp \
 			CgiHandler.cpp \
 			Mime.cpp \
-			Logger.cpp
+			Logger.cpp\
+			IPRange.cpp\
 
 OBJ_FILES = $(SRC_FILES:.cpp=.o)
 

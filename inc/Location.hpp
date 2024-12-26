@@ -6,7 +6,7 @@
 /*   By: jyap <jyap@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/15 22:57:14 by jyap              #+#    #+#             */
-/*   Updated: 2024/12/15 23:13:46 by jyap             ###   ########.fr       */
+/*   Updated: 2024/12/26 14:30:25 by jyap             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,8 @@
 #define LOCATION_HPP
 
 #include "Webserv.hpp"
+
+class IPRange;
 
 class Location
 {
@@ -28,6 +30,10 @@ class Location
 		std::vector<std::string>	_cgi_path;
 		std::vector<std::string>	_cgi_ext;
 		unsigned long				_client_max_body_size;
+		bool						allow_flag;
+		bool						deny_flag;
+		std::vector<IPRange>		allowIP;
+		std::vector<IPRange>		denyIP;
 
 	public:
 		std::map<std::string, std::string> _ext_path;
@@ -48,6 +54,12 @@ class Location
 		void setCgiExtension(std::vector<std::string> extension);
 		void setMaxBodySize(std::string parameter);
 		void setMaxBodySize(unsigned long parameter);
+		void setAllowFlag(bool parameter);
+		void setDenyFlag(bool parameter);
+		void appendAllowIP(const IPRange &iparameter);
+		void appendDenyIP(const IPRange &parameter);
+		bool isIPAllowed(const std::string &clientIP);
+		bool isIPDenied(const std::string &clientIP);
 
 		const std::string &getPath() const;
 		const std::string &getRootLocation() const;

@@ -6,11 +6,12 @@
 /*   By: jyap <jyap@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/15 22:58:25 by jyap              #+#    #+#             */
-/*   Updated: 2024/12/25 22:07:54 by jyap             ###   ########.fr       */
+/*   Updated: 2024/12/26 14:30:42 by jyap             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../inc/Location.hpp"
+#include "../inc/IPRange.hpp"
 
 Location::Location()
 {
@@ -27,6 +28,8 @@ Location::Location()
 	this->_methods.push_back(0);
 	this->_methods.push_back(0);
 	this->_methods.push_back(0);
+	this->allow_flag = false;
+	this->deny_flag = false;
 }
 
 Location::Location(const Location &other)
@@ -49,6 +52,10 @@ Location &Location::operator=(const Location &rhs)
 		this->_methods = rhs._methods;
 		this->_ext_path = rhs._ext_path;
 		this->_client_max_body_size = rhs._client_max_body_size;
+		this->allow_flag = rhs.allow_flag;
+		this->deny_flag = rhs.deny_flag;
+		this->allowIP = rhs.allowIP;
+		this->denyIP = rhs.denyIP;
 	}
 	return (*this);
 }
@@ -124,6 +131,16 @@ void Location::setCgiExtension(std::vector<std::string> extension)
 	this->_cgi_ext = extension;
 }
 
+void Location::setAllowFlag(bool parameter)
+{
+	this->allow_flag = parameter;
+}
+
+void Location::setDenyFlag(bool parameter)
+{
+	this->deny_flag = parameter;
+}
+
 void Location::setMaxBodySize(std::string parameter)
 {
 	unsigned long body_size = 0;
@@ -142,6 +159,16 @@ void Location::setMaxBodySize(std::string parameter)
 void Location::setMaxBodySize(unsigned long parameter)
 {
 	this->_client_max_body_size = parameter;
+}
+
+void Location::appendAllowIP(const IPRange &parameter)
+{
+	this->allowIP.push_back(parameter);
+}
+
+void Location::appendDenyIP(const IPRange &parameter)
+{
+	this->denyIP.push_back(parameter);
 }
 
 /* get functions */
@@ -241,4 +268,24 @@ std::string Location::getPrintMethods() const
 		res += "HEAD";
 	}
 	return (res);
+}
+
+bool Location::isIPAllowed(const std::string &clientIP)
+{
+	for (std::vector<IPRange>::const_iterator it = allowIP.begin(); it != allowIP.end(); ++it)
+	{
+		if (it->contains(clientIP))
+			return (true);  // IP is within the allowed range
+	}
+	return (false); // IP is not within any allowed range
+}
+
+bool Location::isIPDenied(const std::string &clientIP)
+{
+	for (std::vector<IPRange>::const_iterator it = denyIP.begin(); it != denyIP.end(); ++it)
+	{
+		if (it->contains(clientIP))
+			return (true);  // IP is within the denied range
+	}
+	return (false); // IP is not within any denied range
 }

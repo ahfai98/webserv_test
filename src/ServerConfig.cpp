@@ -6,7 +6,7 @@
 /*   By: jyap <jyap@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/16 20:24:55 by jyap              #+#    #+#             */
-/*   Updated: 2024/12/25 22:07:54 by jyap             ###   ########.fr       */
+/*   Updated: 2024/12/26 12:05:04 by jyap             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -329,6 +329,50 @@ void ServerConfig::setLocation(std::string path, std::vector<std::string> parame
 			checkToken(parameter[++i]);
 			new_location.setMaxBodySize(parameter[i]);
 			flag_max_size = true;
+		}
+		else if (parameter[i] == "allow" && (i + 1) < parameter.size())
+		{
+			new_location.setAllowFlag(true);
+			std::string input = "";
+			while (++i < parameter.size())
+			{
+				if (parameter[i].find(";") != std::string::npos)
+				{
+					checkToken(parameter[i]);
+					input += parameter[i];
+					break ;
+				}
+				else
+				{
+					input += parameter[i];
+					if (i + 1 >= parameter.size())
+						throw ErrorException("Token is invalid");
+				}
+			}
+			if (parseAllowDenyString(input, new_location, "allow") == false)
+				throw ErrorException("Error in parsing allow");
+		}
+		else if (parameter[i] == "deny" && (i + 1) < parameter.size())
+		{
+			new_location.setDenyFlag(true);
+			std::string input = "";
+			while (++i < parameter.size())
+			{
+				if (parameter[i].find(";") != std::string::npos)
+				{
+					checkToken(parameter[i]);
+					input += parameter[i];
+					break ;
+				}
+				else
+				{
+					input += parameter[i];
+					if (i + 1 >= parameter.size())
+						throw ErrorException("Token is invalid");
+				}
+			}
+			if (parseAllowDenyString(input, new_location, "deny") == false)
+				throw ErrorException("Error in parsing deny");
 		}
 		else if (i < parameter.size()) //other parameters are not valid
 			throw ErrorException("parameter in a location is invalid");
