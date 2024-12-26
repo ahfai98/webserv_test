@@ -6,7 +6,7 @@
 /*   By: jyap <jyap@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/16 20:24:55 by jyap              #+#    #+#             */
-/*   Updated: 2024/12/26 12:05:04 by jyap             ###   ########.fr       */
+/*   Updated: 2024/12/26 20:25:59 by jyap             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -465,7 +465,7 @@ int ServerConfig::isValidLocation(Location &location) const
 				if (tmp == ".py" || tmp == "*.py")
 				{
 					if (tmp_path.find("python") != std::string::npos)
-						location._ext_path.insert(std::make_pair(".py", tmp_path));
+						location._ext_path[".py"] = tmp_path;
 				}
 				else if (tmp == ".sh" || tmp == "*.sh")
 				{
@@ -480,20 +480,21 @@ int ServerConfig::isValidLocation(Location &location) const
 	}
 	else
 	{
-		if (location.getPath()[0] != '/') //checks for / symbol at the start
+		if (isValidLocationPath(location.getPath()) == false)
 			return (2);
 		if (location.getRootLocation().empty()) //set default root
 		{
 			location.setRootLocation(this->_root);
 		}
+		//Validate index, return and alias
 		if (fileExistReadable(location.getRootLocation() + location.getPath() + "/", location.getIndexLocation()))
 			return (5);
-		if (!location.getReturn().empty()) //check return is valid
+		if (!location.getReturn().empty())
 		{
 			if (fileExistReadable(location.getRootLocation(), location.getReturn()))
 				return (3);
 		}
-		if (!location.getAlias().empty()) //check alias is valid
+		if (!location.getAlias().empty())
 		{
 			if (fileExistReadable(location.getRootLocation(), location.getAlias()))
 			 	return (4);
@@ -562,7 +563,7 @@ const std::string &ServerConfig::getPathErrorPage(short key)
 	return (it->second);
 }
 
-/* find location by a name */ //do not using in parser, created for server manager
+// find location by a name
 const std::vector<Location>::iterator ServerConfig::getLocationKey(std::string key)
 {
 	std::vector<Location>::iterator it;
@@ -577,7 +578,7 @@ const std::vector<Location>::iterator ServerConfig::getLocationKey(std::string k
 /* check is a properly end of parameter */
 void ServerConfig::checkToken(std::string &parameter)
 {
-	size_t pos = parameter.rfind(';');
+	size_t pos = parameter.rfind(';'); //; must be at the end of the parameter
 	if (pos != parameter.size() - 1)
 		throw ErrorException("Token is invalid");
 	parameter.erase(pos);
@@ -600,10 +601,10 @@ bool ServerConfig::checkLocationsDup() const
 }
 
 /* socket setup and binding */
-void	ServerConfig::setupServer(void)
+void	ServerConfig::setupServerSocket(void)
 {
 	//AF_INET means for IPv4
-	//SOCK_STREAM : Use TCP, 0 for Default protocol for TCP/IP
+	//SOCK_STREAM: Use TCP, 0 for Default protocol for TCP/IP
 	// returns fd for the socket or -1 if fail
 	if ((_listen_fd = socket(AF_INET, SOCK_STREAM, 0) )  == -1 )
 	{

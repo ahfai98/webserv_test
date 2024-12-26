@@ -6,7 +6,7 @@
 /*   By: jyap <jyap@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/16 11:42:54 by jyap              #+#    #+#             */
-/*   Updated: 2024/12/26 12:05:38 by jyap             ###   ########.fr       */
+/*   Updated: 2024/12/26 19:41:02 by jyap             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,7 +20,7 @@
 # include <unistd.h> //close, read, write, fork
 # include <dirent.h> //DIR structure, opendir, readdir, closedir
 # include <sstream> //std::stringstream, toString
-# include <cstdlib> //malloc, free, atoi
+# include <cstdlib> //malloc, free, ft_stoi
 # include <fstream> //std::ifstream, std::ofstream
 # include <cctype> //tolower, isdigit
 # include <ctime> //time, gmtime, strftime
@@ -91,5 +91,7 @@ int fileExistReadable(const std::string &path, const std::string &index);
 bool	checkdigits(std::string &str);
 bool isValidIP(const std::string &ip_addr);
 bool	parseAllowDenyString(const std::string &input, Location &location, const char *mode);
+
+bool isValidLocationPath(const std::string &path);
 
 #endif

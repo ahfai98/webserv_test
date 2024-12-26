@@ -6,7 +6,7 @@
 /*   By: jyap <jyap@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/15 22:51:47 by jyap              #+#    #+#             */
-/*   Updated: 2024/12/21 17:49:05 by jyap             ###   ########.fr       */
+/*   Updated: 2024/12/26 20:26:10 by jyap             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -83,7 +83,7 @@ class ServerConfig
 				virtual ~ErrorException() throw() {}
 		};
 
-		void	setupServer();
+		void	setupServerSocket();
 		int		getFd();
 };
 

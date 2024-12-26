@@ -6,7 +6,7 @@
 /*   By: jyap <jyap@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/21 22:36:59 by jyap              #+#    #+#             */
-/*   Updated: 2024/12/22 21:55:31 by jyap             ###   ########.fr       */
+/*   Updated: 2024/12/26 20:25:52 by jyap             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,7 +37,7 @@ void	ServerManager::setupServers(std::vector<ServerConfig> servers)
 			}
 		}
 		if (!serverdup)
-			it->setupServer();
+			it->setupServerSocket();
 		//inet_ntop converts an IP address from binary format to string
 		//inet_ntop(int af, const void *src, char *dst, socklen_t size)
 		// af: address family, AF_INET for IPv4, AF_INET6 for IPv6

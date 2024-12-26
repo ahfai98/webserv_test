@@ -6,7 +6,7 @@
 /*   By: jyap <jyap@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/25 22:39:03 by jyap              #+#    #+#             */
-/*   Updated: 2024/12/26 14:23:09 by jyap             ###   ########.fr       */
+/*   Updated: 2024/12/26 19:16:41 by jyap             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,7 +27,7 @@ IPRange::IPRange(const std::string& ip_addr)
 		std::string ip_part = ip_addr.substr(0, slash_pos);
 		std::string prefix_part = ip_addr.substr(slash_pos + 1);
 		ip = ip_part;
-		prefix = atoi(prefix_part.c_str());
+		prefix = ft_stoi(prefix_part.c_str());
 	}
 	else
 	{
@@ -85,11 +85,11 @@ uint32_t IPRange::ipToInt(const std::string &ip) const
 	while ((pos = ip.find('.', last_pos)) != std::string::npos)
 	{
 		std::string segment = ip.substr(last_pos, pos - last_pos);
-		result |= (atoi(segment.c_str()) << shift);
+		result |= (ft_stoi(segment.c_str()) << shift);
 		last_pos = pos + 1;
 		shift -= 8;
 	}
-	result |= atoi(ip.substr(last_pos).c_str());
+	result |= ft_stoi(ip.substr(last_pos).c_str());
 	return (result);
 }
 

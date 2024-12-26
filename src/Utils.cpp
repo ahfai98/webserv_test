@@ -6,7 +6,7 @@
 /*   By: jyap <jyap@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/16 12:11:53 by jyap              #+#    #+#             */
-/*   Updated: 2024/12/26 12:14:10 by jyap             ###   ########.fr       */
+/*   Updated: 2024/12/26 19:45:21 by jyap             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -335,7 +335,7 @@ bool isValidIP(const std::string &ip_addr)
 		// Validate the prefix length
 		if (!checkdigits(prefix_part))
 			return (false);
-		int prefix = atoi(prefix_part.c_str());
+		int prefix = ft_stoi(prefix_part.c_str());
 		if (prefix < 0 || prefix > 32)
 			return (false);
 
@@ -351,7 +351,7 @@ bool isValidIP(const std::string &ip_addr)
 			std::string segment = ip_addr.substr(last_pos, i - last_pos);
 			if (!checkdigits(segment))
 				return (false);
-			int value = atoi(segment.c_str());
+			int value = ft_stoi(segment.c_str());
 			if (value < 0 || value > 255)
 				return (false);
 			last_pos = i + 1;
@@ -363,7 +363,7 @@ bool isValidIP(const std::string &ip_addr)
 	if (dots != 3 || last_pos >= ip_addr.size())
 		return (false);
 	std::string last_segment = ip_addr.substr(last_pos);
-	int value = atoi(last_segment.c_str());
+	int value = ft_stoi(last_segment.c_str());
 	if (!checkdigits(last_segment))
 		return (false);
 	return (value >= 0 && value <= 255);
@@ -406,5 +406,31 @@ bool	parseAllowDenyString(const std::string &input, Location &location, const ch
 			return(false);
 		}
 	}
+	return (true);
+}
+
+bool isValidLocationPath(const std::string &path)
+{
+	// Define invalid characters
+	static const std::string invalid_chars = "*?<>|\"\\\0";
+	static const std::string whitespace = " \t\n\r";
+
+	// Path must not be empty and start with /
+	if (path.empty() || path[0] != '/')
+		return (false);
+
+	// Check for invalid characters
+	if (path.find_first_of(invalid_chars) != std::string::npos)
+		return (false);
+
+	// No whitespaces
+	if (path.find_first_of(whitespace) != std::string::npos)
+		return (false);
+		
+	// Normalize and validate double slashes (e.g., "//")
+	if (path.find("//") != std::string::npos)
+		return (false);
+
+	// If all checks pass, path is valid
 	return (true);
 }
