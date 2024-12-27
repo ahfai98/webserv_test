@@ -6,7 +6,7 @@
 /*   By: jyap <jyap@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/15 22:51:47 by jyap              #+#    #+#             */
-/*   Updated: 2024/12/27 11:32:56 by jyap             ###   ########.fr       */
+/*   Updated: 2024/12/27 11:49:43 by jyap             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,6 +34,9 @@ class ServerConfig
 		struct sockaddr_in 				_server_address; //struct that contains serer's IP address and port
 		//Includes: sin_family(AF_INET), sin_port, sin_addr
 		int								_listen_fd; //fd for server's listening socket
+		bool							location_flag;
+		bool							autoindex_flag;
+		bool							maxsize_flag;
 
 	public:
 		ServerConfig();
@@ -68,6 +71,12 @@ class ServerConfig
 		const std::vector<Location>::iterator getLocationKey(std::string key);
 		static void checkToken(std::string &parameter);
 		bool checkLocationsDup() const;
+		const bool &getLocationSetFlag() const;
+		const bool &getAutoIndexFlag() const;
+		const bool &getMaxSizeFlag() const;
+		void setAutoIndexFlag(bool parameter);
+		void setLocationSetFlag(bool parameter);
+		void setMaxSizeFlag(bool parameter);
 		
 		void handleRoot(size_t& i, Location& new_location, std::vector<std::string>& parameter);
 		

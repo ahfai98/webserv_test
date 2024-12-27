@@ -6,7 +6,7 @@
 /*   By: jyap <jyap@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/21 18:12:30 by jyap              #+#    #+#             */
-/*   Updated: 2024/12/27 11:31:24 by jyap             ###   ########.fr       */
+/*   Updated: 2024/12/27 11:49:43 by jyap             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -251,16 +251,13 @@ void ConfigParser::createServer(std::string &config, ServerConfig &server)
 {
 	std::vector<std::string>	parameters;
 	std::vector<std::string>	error_codes;
-	int		flag_loc = 1;
-	bool	flag_autoindex = false;
-	bool	flag_max_size = false;
 
 	parameters = splitparameters(config += ' ', std::string(" \n\t"));
 	if (parameters.size() < 3)
 		throw  ErrorException("Failed server validation");
 	for (size_t i = 0; i < parameters.size(); i++)
 	{
-		if (parameters[i] == "listen" && (i + 1) < parameters.size() && flag_loc)
+		if (parameters[i] == "listen" && (i + 1) < parameters.size() && server.getLocationSetFlag() == false)
 		{
 			if (server.getPort())
 				throw  ErrorException("Port is duplicated");
@@ -282,21 +279,21 @@ void ConfigParser::createServer(std::string &config, ServerConfig &server)
 			server.setLocation(path, codes);
 			if (i < parameters.size() && parameters[i] != "}")
 				throw  ErrorException("Wrong character in server scope{}");
-			flag_loc = 0;
+			server.setLocationSetFlag(true);
 		}
-		else if (parameters[i] == "host" && (i + 1) < parameters.size() && flag_loc)
+		else if (parameters[i] == "host" && (i + 1) < parameters.size() && server.getLocationSetFlag() == false)
 		{
 			if (server.getHost())
 				throw  ErrorException("Host is duplicated");
 			server.setHost(parameters[++i]);
 		}
-		else if (parameters[i] == "root" && (i + 1) < parameters.size() && flag_loc)
+		else if (parameters[i] == "root" && (i + 1) < parameters.size() && server.getLocationSetFlag() == false)
 		{
 			if (!server.getRoot().empty())
 				throw  ErrorException("Root is duplicated");
 			server.setRoot(parameters[++i]);
 		}
-		else if (parameters[i] == "error_page" && (i + 1) < parameters.size() && flag_loc)
+		else if (parameters[i] == "error_page" && (i + 1) < parameters.size() && server.getLocationSetFlag() == false)
 		{
 			while (++i < parameters.size())
 			{
@@ -307,35 +304,35 @@ void ConfigParser::createServer(std::string &config, ServerConfig &server)
 					throw ErrorException("Wrong character out of server scope{}");
 			}
 		}
-		else if (parameters[i] == "client_max_body_size" && (i + 1) < parameters.size() && flag_loc)
+		else if (parameters[i] == "client_max_body_size" && (i + 1) < parameters.size() && server.getLocationSetFlag() == false)
 		{
-			if (flag_max_size)
+			if (server.getMaxSizeFlag())
 				throw  ErrorException("Client_max_body_size is duplicated");
 			server.setClientMaxBodySize(parameters[++i]);
-			flag_max_size = true;
+			server.setMaxSizeFlag(true);
 		}
-		else if (parameters[i] == "server_name" && (i + 1) < parameters.size() && flag_loc)
+		else if (parameters[i] == "server_name" && (i + 1) < parameters.size() && server.getLocationSetFlag() == false)
 		{
 			if (!server.getServerName().empty())
 				throw  ErrorException("Server_name is duplicated");
 			server.setServerName(parameters[++i]);
 		}
-		else if (parameters[i] == "index" && (i + 1) < parameters.size() && flag_loc)
+		else if (parameters[i] == "index" && (i + 1) < parameters.size() && server.getLocationSetFlag() == false)
 		{
 			if (!server.getIndex().empty())
 				throw  ErrorException("Index is duplicated");
 			server.setIndex(parameters[++i]);
 		}
-		else if (parameters[i] == "autoindex" && (i + 1) < parameters.size() && flag_loc)
+		else if (parameters[i] == "autoindex" && (i + 1) < parameters.size() && server.getLocationSetFlag() == false)
 		{
-			if (flag_autoindex)
+			if (server.getAutoIndexFlag())
 				throw ErrorException("Autoindex of server is duplicated");
 			server.setAutoindex(parameters[++i]);
-			flag_autoindex = true;
+			server.setAutoIndexFlag(true);
 		}
 		else if (parameters[i] != "}" && parameters[i] != "{")
 		{
-			if (!flag_loc)
+			if (server.getLocationSetFlag() == true)
 				throw  ErrorException("parameters after location");
 			else
 				throw  ErrorException("Unsupported directive");

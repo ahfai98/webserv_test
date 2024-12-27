@@ -6,7 +6,7 @@
 /*   By: jyap <jyap@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/16 20:24:55 by jyap              #+#    #+#             */
-/*   Updated: 2024/12/27 11:33:03 by jyap             ###   ########.fr       */
+/*   Updated: 2024/12/27 11:49:43 by jyap             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,6 +23,9 @@ ServerConfig::ServerConfig()
 	this->_listen_fd = 0;
 	this->_autoindex = false;
 	this->initErrorPages();
+	this->location_flag = false;
+	this->autoindex_flag = false;
+	this->maxsize_flag = false;
 }
 
 ServerConfig::~ServerConfig() {}
@@ -49,6 +52,9 @@ ServerConfig &ServerConfig::operator=(const ServerConfig & rhs)
 		this->_listen_fd = rhs._listen_fd;
 		this->_autoindex = rhs._autoindex;
 		this->_server_address = rhs._server_address;
+		this->location_flag = rhs.location_flag;
+		this->autoindex_flag = rhs.autoindex_flag;
+		this->maxsize_flag = rhs.maxsize_flag;
 	}
 	return (*this);
 }
@@ -71,6 +77,36 @@ void ServerConfig::initErrorPages(void)
 	_error_pages[503] = "";
 	_error_pages[505] = "";
 	_error_pages[505] = "";
+}
+
+const bool &ServerConfig::getLocationSetFlag() const
+{
+	return (this->location_flag);
+}
+
+const bool &ServerConfig::getAutoIndexFlag() const
+{
+	return (this->autoindex_flag);
+}
+
+const bool &ServerConfig::getMaxSizeFlag() const
+{
+	return (this->maxsize_flag);
+}
+
+void ServerConfig::setLocationSetFlag(bool parameter)
+{
+	this->location_flag = parameter;
+}
+
+void ServerConfig::setAutoIndexFlag(bool parameter)
+{
+	this->autoindex_flag = parameter;
+}
+
+void ServerConfig::setMaxSizeFlag(bool parameter)
+{
+	this->maxsize_flag = parameter;
 }
 
 /* Set functions */
