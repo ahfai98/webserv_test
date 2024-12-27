@@ -6,7 +6,7 @@
 /*   By: jyap <jyap@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/16 20:24:55 by jyap              #+#    #+#             */
-/*   Updated: 2024/12/27 11:49:43 by jyap             ###   ########.fr       */
+/*   Updated: 2024/12/27 14:45:23 by jyap             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -436,7 +436,7 @@ const std::string &ServerConfig::getIndex()
 	return (this->_index);
 }
 
-int   	ServerConfig::getFd() 
+int ServerConfig::getFd() 
 { 
 	return (this->_listen_fd); 
 }
@@ -476,11 +476,11 @@ bool ServerConfig::checkLocationsDup() const
 {
 	if (this->_locations.size() < 2)
 		return (false);
-	std::vector<Location>::const_iterator it1;
-	std::vector<Location>::const_iterator it2;
-	for (it1 = this->_locations.begin(); it1 != this->_locations.end() - 1; it1++) {
-		for (it2 = it1 + 1; it2 != this->_locations.end(); it2++) {
-			if (it1->getPath() == it2->getPath())
+	for (size_t i = 0; i < this->_locations.size() - 1; ++i)
+	{
+		for (size_t j = i + 1; j < this->_locations.size(); ++j)
+		{
+			if (this->_locations[i].getPath() == this->_locations[j].getPath())
 				return (true);
 		}
 	}

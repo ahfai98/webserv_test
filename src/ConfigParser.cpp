@@ -6,7 +6,7 @@
 /*   By: jyap <jyap@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/21 18:12:30 by jyap              #+#    #+#             */
-/*   Updated: 2024/12/27 11:49:43 by jyap             ###   ########.fr       */
+/*   Updated: 2024/12/27 14:35:08 by jyap             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -255,80 +255,23 @@ void ConfigParser::createServer(std::string &config, ServerConfig &server)
 	parameters = splitparameters(config += ' ', std::string(" \n\t"));
 	if (parameters.size() < 3)
 		throw  ErrorException("Failed server validation");
+	handlers["root"] = &ConfigParser::handleRoot;
+	handlers["listen"] = &ConfigParser::handleListen;
+	handlers["location"] = &ConfigParser::handleLocation;
+	handlers["autoindex"] = &ConfigParser::handleAutoIndex;
+	handlers["index"] = &ConfigParser::handleIndex;
+	handlers["host"] = &ConfigParser::handleHost;
+	handlers["error_page"] = &ConfigParser::handleErrorPage;
+	handlers["client_max_body_size"] = &ConfigParser::handleClientMaxBodySize;
+	handlers["server_name"] = &ConfigParser::handleServerName;
+	
 	for (size_t i = 0; i < parameters.size(); i++)
 	{
-		if (parameters[i] == "listen" && (i + 1) < parameters.size() && server.getLocationSetFlag() == false)
+		std::map<std::string, Handler>::iterator it = handlers.find(parameters[i]);
+		if (it != handlers.end())
 		{
-			if (server.getPort())
-				throw  ErrorException("Port is duplicated");
-			server.setPort(parameters[++i]);
-		}
-		else if (parameters[i] == "location" && (i + 1) < parameters.size())
-		{
-			std::string	path;
-			i++;
-			if (parameters[i] == "{" || parameters[i] == "}")
-				throw  ErrorException("Wrong character in server scope{}");
-			path = parameters[i];
-			std::vector<std::string> codes;
-			if (parameters[++i] != "{")
-				throw  ErrorException("Wrong character in server scope{}");
-			i++;
-			while (i < parameters.size() && parameters[i] != "}")
-				codes.push_back(parameters[i++]);
-			server.setLocation(path, codes);
-			if (i < parameters.size() && parameters[i] != "}")
-				throw  ErrorException("Wrong character in server scope{}");
-			server.setLocationSetFlag(true);
-		}
-		else if (parameters[i] == "host" && (i + 1) < parameters.size() && server.getLocationSetFlag() == false)
-		{
-			if (server.getHost())
-				throw  ErrorException("Host is duplicated");
-			server.setHost(parameters[++i]);
-		}
-		else if (parameters[i] == "root" && (i + 1) < parameters.size() && server.getLocationSetFlag() == false)
-		{
-			if (!server.getRoot().empty())
-				throw  ErrorException("Root is duplicated");
-			server.setRoot(parameters[++i]);
-		}
-		else if (parameters[i] == "error_page" && (i + 1) < parameters.size() && server.getLocationSetFlag() == false)
-		{
-			while (++i < parameters.size())
-			{
-				error_codes.push_back(parameters[i]);
-				if (parameters[i].find(';') != std::string::npos)
-					break ;
-				if (i + 1 >= parameters.size())
-					throw ErrorException("Wrong character out of server scope{}");
-			}
-		}
-		else if (parameters[i] == "client_max_body_size" && (i + 1) < parameters.size() && server.getLocationSetFlag() == false)
-		{
-			if (server.getMaxSizeFlag())
-				throw  ErrorException("Client_max_body_size is duplicated");
-			server.setClientMaxBodySize(parameters[++i]);
-			server.setMaxSizeFlag(true);
-		}
-		else if (parameters[i] == "server_name" && (i + 1) < parameters.size() && server.getLocationSetFlag() == false)
-		{
-			if (!server.getServerName().empty())
-				throw  ErrorException("Server_name is duplicated");
-			server.setServerName(parameters[++i]);
-		}
-		else if (parameters[i] == "index" && (i + 1) < parameters.size() && server.getLocationSetFlag() == false)
-		{
-			if (!server.getIndex().empty())
-				throw  ErrorException("Index is duplicated");
-			server.setIndex(parameters[++i]);
-		}
-		else if (parameters[i] == "autoindex" && (i + 1) < parameters.size() && server.getLocationSetFlag() == false)
-		{
-			if (server.getAutoIndexFlag())
-				throw ErrorException("Autoindex of server is duplicated");
-			server.setAutoindex(parameters[++i]);
-			server.setAutoIndexFlag(true);
+			// Call the corresponding handler
+			(this->*(it->second))(i, server, parameters);
 		}
 		else if (parameters[i] != "}" && parameters[i] != "{")
 		{
@@ -338,10 +281,10 @@ void ConfigParser::createServer(std::string &config, ServerConfig &server)
 				throw  ErrorException("Unsupported directive");
 		}
 	}
-	finalizeServerConfig(server, error_codes);
+	finalizeServerConfig(server);
 }
 
-void ConfigParser::finalizeServerConfig(ServerConfig &server, const std::vector<std::string> &error_codes)
+void ConfigParser::finalizeServerConfig(ServerConfig &server)
 {
 	if (server.getRoot().empty())
 		server.setRoot("/;");
@@ -355,23 +298,24 @@ void ConfigParser::finalizeServerConfig(ServerConfig &server, const std::vector<
 		throw ErrorException("Duplicate locations in server configuration");
 	if (!server.getPort())
 		throw ErrorException("Port not found in server configuration");
-	server.setErrorPages(error_codes);
 	if (!server.isValidErrorPages())
 		throw ErrorException("Invalid error pages in server configuration");
 }
 
-/* checking repeat and mandatory parameters*/
+//Ensure server port, host and name is unique
 void ConfigParser::checkServers()
 {
-	std::vector<ServerConfig>::iterator it1;
-	std::vector<ServerConfig>::iterator it2;
-
-	for (it1 = this->_servers.begin(); it1 != this->_servers.end() - 1; it1++)
+	size_t i, j;
+	for (i = 0; i < this->_servers.size() - 1; i++)
 	{
-		for (it2 = it1 + 1; it2 != this->_servers.end(); it2++)
+		for (j = i + 1; j < this->_servers.size(); j++)
 		{
-			if (it1->getPort() == it2->getPort() && it1->getHost() == it2->getHost() && it1->getServerName() == it2->getServerName())
+			if (this->_servers[i].getPort() == this->_servers[j].getPort() &&
+				this->_servers[i].getHost() == this->_servers[j].getHost() &&
+				this->_servers[i].getServerName() == this->_servers[j].getServerName())
+			{
 				throw ErrorException("Failed server validation");
+			}
 		}
 	}
 }
@@ -380,3 +324,124 @@ std::vector<ServerConfig>	ConfigParser::getServers()
 {
 	return (this->_servers);
 }
+
+void ConfigParser::handleListen(size_t& i, ServerConfig& server, std::vector<std::string>& parameter)
+{
+	if ((i + 1) > parameter.size())
+		throw ErrorException("Missing value for listen");
+	if (server.getLocationSetFlag() == true)
+		throw  ErrorException("parameters after location");
+	if (server.getPort())
+		throw  ErrorException("Port is duplicated");
+	server.setPort(parameter[++i]);
+}
+
+void ConfigParser::handleLocation(size_t& i, ServerConfig& server, std::vector<std::string>& parameter)
+{
+	if ((i + 1) > parameter.size())
+		throw ErrorException("Missing value for location");
+	std::string	path;
+	i++;
+	if (parameter[i] == "{" || parameter[i] == "}")
+		throw  ErrorException("Wrong character in server scope{}");
+	path = parameter[i];
+	std::vector<std::string> codes;
+	if (parameter[++i] != "{")
+		throw  ErrorException("Wrong character in server scope{}");
+	i++;
+	while (i < parameter.size() && parameter[i] != "}")
+		codes.push_back(parameter[i++]);
+	server.setLocation(path, codes);
+	// Check last character is }
+	if (i < parameter.size() && parameter[i] != "}")
+		throw  ErrorException("Wrong character in server scope{}");
+	server.setLocationSetFlag(true);
+}
+
+void ConfigParser::handleHost(size_t& i, ServerConfig& server, std::vector<std::string>& parameter)
+{
+	if ((i + 1) > parameter.size())
+		throw ErrorException("Missing value for host");
+	if (server.getLocationSetFlag() == true)
+		throw  ErrorException("parameters after location");
+	if (server.getHost())
+		throw  ErrorException("Host is duplicated");
+	server.setHost(parameter[++i]);
+}
+
+void ConfigParser::handleRoot(size_t& i, ServerConfig& server, std::vector<std::string>& parameter)
+{
+	if ((i + 1) > parameter.size())
+		throw ErrorException("Missing value for root");
+	if (server.getLocationSetFlag() == true)
+		throw  ErrorException("parameters after location");
+	if (!server.getRoot().empty())
+		throw  ErrorException("Root is duplicated");
+	server.setRoot(parameter[++i]);
+}
+
+
+void ConfigParser::handleIndex(size_t& i, ServerConfig& server, std::vector<std::string>& parameter)
+{
+	if ((i + 1) > parameter.size())
+		throw ErrorException("Missing value for index");
+	if (server.getLocationSetFlag() == true)
+		throw  ErrorException("parameters after location");
+	if (!server.getIndex().empty())
+		throw  ErrorException("Index is duplicated");
+	server.setIndex(parameter[++i]);
+}
+
+void ConfigParser::handleAutoIndex(size_t& i, ServerConfig& server, std::vector<std::string>& parameter)
+{
+	if ((i + 1) > parameter.size())
+		throw ErrorException("Missing value for autoindex");
+	if (server.getLocationSetFlag() == true)
+		throw  ErrorException("parameters after location");
+	if (server.getAutoIndexFlag())
+		throw ErrorException("Autoindex of server is duplicated");
+	server.setAutoindex(parameter[++i]);
+	server.setAutoIndexFlag(true);
+}
+
+void ConfigParser::handleErrorPage(size_t& i, ServerConfig& server, std::vector<std::string>& parameter)
+{
+	if ((i + 1) > parameter.size())
+		throw ErrorException("Missing value for error_page");
+	if (server.getLocationSetFlag() == true)
+		throw  ErrorException("parameters after location");
+	std::vector<std::string>	error_codes;
+	while (++i < parameter.size())
+	{
+		error_codes.push_back(parameter[i]);
+		if (parameter[i].find(';') != std::string::npos)
+			break ;
+		if (i + 1 >= parameter.size())
+			throw ErrorException("Wrong character out of server scope{}");
+	}
+	server.setErrorPages(error_codes);
+}
+
+void ConfigParser::handleServerName(size_t& i, ServerConfig& server, std::vector<std::string>& parameter)
+{
+	if ((i + 1) > parameter.size())
+		throw ErrorException("Missing value for server name");
+	if (server.getLocationSetFlag() == true)
+		throw  ErrorException("parameters after location");
+	if (!server.getServerName().empty())
+		throw  ErrorException("Server_name is duplicated");
+	server.setServerName(parameter[++i]);
+}
+
+void ConfigParser::handleClientMaxBodySize(size_t& i, ServerConfig& server, std::vector<std::string>& parameter)
+{
+	if ((i + 1) > parameter.size())
+		throw ErrorException("Missing value for client max body size");
+	if (server.getLocationSetFlag() == true)
+		throw  ErrorException("parameters after location");
+	if (server.getMaxSizeFlag())
+		throw  ErrorException("Client_max_body_size is duplicated");
+	server.setClientMaxBodySize(parameter[++i]);
+	server.setMaxSizeFlag(true);
+}
+

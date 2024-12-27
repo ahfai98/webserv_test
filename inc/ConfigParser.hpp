@@ -6,7 +6,7 @@
 /*   By: jyap <jyap@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/15 22:47:57 by jyap              #+#    #+#             */
-/*   Updated: 2024/12/27 11:33:26 by jyap             ###   ########.fr       */
+/*   Updated: 2024/12/27 14:31:02 by jyap             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,6 +23,25 @@ class ConfigParser
 		std::vector<ServerConfig>	_servers;
 		std::vector<std::string>	_server_config;
 		size_t						_nb_server;
+		typedef void (ConfigParser::*Handler)(size_t&, ServerConfig&, std::vector<std::string>&);
+		std::map<std::string, Handler>	handlers;
+		void handleRoot(size_t& i, ServerConfig& server, std::vector<std::string>& parameter);
+		
+		void handleListen(size_t& i, ServerConfig& server, std::vector<std::string>& parameter);
+
+		void handleLocation(size_t& i, ServerConfig& server, std::vector<std::string>& parameter);
+
+		void handleIndex(size_t& i, ServerConfig& server, std::vector<std::string>& parameter);
+
+		void handleAutoIndex(size_t& i, ServerConfig& server, std::vector<std::string>& parameter);
+
+		void handleErrorPage(size_t& i, ServerConfig& server, std::vector<std::string>& parameter);
+
+		void handleServerName(size_t& i, ServerConfig& server, std::vector<std::string>& parameter);
+
+		void handleClientMaxBodySize(size_t& i, ServerConfig& server, std::vector<std::string>& parameter);
+
+		void handleHost(size_t& i, ServerConfig& server, std::vector<std::string>& parameter);
 
 	public:
 		ConfigParser();
@@ -38,7 +57,7 @@ class ConfigParser
 		void checkServers();
 		std::vector<ServerConfig>	getServers();
 		int print();
-		void finalizeServerConfig(ServerConfig &server, const std::vector<std::string> &error_codes);
+		void finalizeServerConfig(ServerConfig &server);
 		
 		class ErrorException : public std::exception
 		{
