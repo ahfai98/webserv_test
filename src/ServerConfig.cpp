@@ -6,7 +6,7 @@
 /*   By: jyap <jyap@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/16 20:24:55 by jyap              #+#    #+#             */
-/*   Updated: 2024/12/27 00:13:15 by jyap             ###   ########.fr       */
+/*   Updated: 2024/12/27 11:33:03 by jyap             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -157,7 +157,7 @@ void ServerConfig::setAutoindex(std::string autoindex)
 		this->_autoindex = true;
 }
 
-void ServerConfig::setErrorPages(std::vector<std::string> &parameter)
+void ServerConfig::setErrorPages(const std::vector<std::string> &parameter)
 {
 	if (parameter.empty())
 		return;
@@ -200,9 +200,6 @@ void ServerConfig::setLocation(std::string path, std::vector<std::string> parame
 {
 	Location new_location;
 	std::vector<std::string> methods;
-	bool flag_methods = false;
-	bool flag_autoindex = false;
-	bool flag_max_size = false;
 	int valid;
 
 	handlers["root"] = &ServerConfig::handleRoot;
@@ -225,7 +222,7 @@ void ServerConfig::setLocation(std::string path, std::vector<std::string> parame
 		if (it != handlers.end())
 		{
 			// Call the corresponding handler
-			(this->*(it->second))(i, new_location, parameter, flag_methods, flag_autoindex, flag_max_size);
+			(this->*(it->second))(i, new_location, parameter);
 		}
 		else
 			// Handle invalid parameters
@@ -233,7 +230,7 @@ void ServerConfig::setLocation(std::string path, std::vector<std::string> parame
 	}
 	if (new_location.getPath() != "/cgi-bin" && new_location.getIndexLocation().empty())
 		new_location.setIndexLocation(this->_index); //set index
-	if (!flag_max_size) //set default max body size
+	if (new_location.getMaxSizeFlag() == false) //set default max body size
 		new_location.setMaxBodySize(this->_client_max_body_size);
 	valid = isValidLocation(new_location);
 	if (valid == 1)
@@ -488,11 +485,8 @@ void	ServerConfig::setupServerSocket(void)
 	}
 }
 
-void ServerConfig::handleRoot(size_t& i, Location& new_location, std::vector<std::string>& parameter,bool& flag_methods, bool& flag_autoindex, bool& flag_max_size)
+void ServerConfig::handleRoot(size_t& i, Location& new_location, std::vector<std::string>& parameter)
 {
-	(void)flag_methods;
-	(void)flag_autoindex;
-	(void)flag_max_size;
 	if ((i + 1) > parameter.size())
 		throw ErrorException("Missing value for root");
 	if (!new_location.getRootLocation().empty()) //check if root is already set
@@ -504,13 +498,11 @@ void ServerConfig::handleRoot(size_t& i, Location& new_location, std::vector<std
 		new_location.setRootLocation(this->_root + parameter[i]); //if not directory
 }
 		
-void ServerConfig::handleAllowMethods(size_t& i, Location& new_location, std::vector<std::string>& parameter, bool& flag_methods, bool& flag_autoindex, bool& flag_max_size)
+void ServerConfig::handleAllowMethods(size_t& i, Location& new_location, std::vector<std::string>& parameter)
 {
-	(void)flag_autoindex;
-	(void)flag_max_size;
 	if ((i + 1) > parameter.size())
 		throw ErrorException("Missing value for Allow Methods");
-	if (flag_methods) //check if methods already set
+	if (new_location.getMethodsFlag()) //check if methods already set
 			throw ErrorException("Allow_methods of location is duplicated");
 		std::vector<std::string> methods;
 		while (++i < parameter.size())
@@ -529,29 +521,24 @@ void ServerConfig::handleAllowMethods(size_t& i, Location& new_location, std::ve
 			}
 		}
 		new_location.setMethods(methods);
-		flag_methods = true;
+		new_location.setMethodsFlag(true);
 }
 
-void ServerConfig::handleAutoIndex(size_t& i, Location& new_location, std::vector<std::string>& parameter, bool& flag_methods, bool& flag_autoindex, bool& flag_max_size)
+void ServerConfig::handleAutoIndex(size_t& i, Location& new_location, std::vector<std::string>& parameter)
 {
-	(void)flag_methods;
-	(void)flag_max_size;
 	if ((i + 1) > parameter.size())
 		throw ErrorException("Missing value for autoindex");
 	if (new_location.getPath() == "/cgi-bin")
 		throw ErrorException("parameter autoindex not allow for CGI");
-	if (flag_autoindex) //check if autoindex already set
+	if (new_location.getAutoIndexFlag()) //check if autoindex already set
 		throw ErrorException("Autoindex of location is duplicated");
 	checkToken(parameter[++i]);
 	new_location.setAutoindex(parameter[i]);
-	flag_autoindex = true;
+	new_location.setAutoIndexFlag(true);
 }
 
-void ServerConfig::handleIndex(size_t& i, Location& new_location, std::vector<std::string>& parameter, bool& flag_methods, bool& flag_autoindex, bool& flag_max_size)
+void ServerConfig::handleIndex(size_t& i, Location& new_location, std::vector<std::string>& parameter)
 {
-	(void)flag_methods;
-	(void)flag_autoindex;
-	(void)flag_max_size;
 	if ((i + 1) > parameter.size())
 		throw ErrorException("Missing value for index");
 	//check if index already set
@@ -561,11 +548,8 @@ void ServerConfig::handleIndex(size_t& i, Location& new_location, std::vector<st
 	new_location.setIndexLocation(parameter[i]);
 }
 
-void ServerConfig::handleAlias(size_t& i, Location& new_location, std::vector<std::string>& parameter, bool& flag_methods, bool& flag_autoindex, bool& flag_max_size)
+void ServerConfig::handleAlias(size_t& i, Location& new_location, std::vector<std::string>& parameter)
 {
-	(void)flag_methods;
-	(void)flag_autoindex;
-	(void)flag_max_size;
 	if ((i + 1) > parameter.size())
 		throw ErrorException("Missing value for alias");
 	if (new_location.getPath() == "/cgi-bin")
@@ -577,11 +561,8 @@ void ServerConfig::handleAlias(size_t& i, Location& new_location, std::vector<st
 	new_location.setAlias(parameter[i]);
 }
 
-void ServerConfig::handleReturn(size_t& i, Location& new_location, std::vector<std::string>& parameter, bool& flag_methods, bool& flag_autoindex, bool& flag_max_size)
+void ServerConfig::handleReturn(size_t& i, Location& new_location, std::vector<std::string>& parameter)
 {
-	(void)flag_methods;
-	(void)flag_autoindex;
-	(void)flag_max_size;
 	if ((i + 1) > parameter.size())
 		throw ErrorException("Missing value for return");
 	if (new_location.getPath() == "/cgi-bin")
@@ -593,11 +574,8 @@ void ServerConfig::handleReturn(size_t& i, Location& new_location, std::vector<s
 	new_location.setReturn(parameter[i]);
 }
 
-void ServerConfig::handleCgiExt(size_t& i, Location& new_location, std::vector<std::string>& parameter, bool& flag_methods, bool& flag_autoindex, bool& flag_max_size)
+void ServerConfig::handleCgiExt(size_t& i, Location& new_location, std::vector<std::string>& parameter)
 {
-	(void)flag_methods;
-	(void)flag_autoindex;
-	(void)flag_max_size;
 	if ((i + 1) > parameter.size())
 		throw ErrorException("Missing value for cgi_ext");
 	if (new_location.getPath() != "/cgi-bin")
@@ -621,11 +599,8 @@ void ServerConfig::handleCgiExt(size_t& i, Location& new_location, std::vector<s
 	new_location.setCgiExtension(extension);
 }
 
-void ServerConfig::handleCgiPath(size_t& i, Location& new_location, std::vector<std::string>& parameter, bool& flag_methods, bool& flag_autoindex, bool& flag_max_size)
+void ServerConfig::handleCgiPath(size_t& i, Location& new_location, std::vector<std::string>& parameter)
 {
-	(void)flag_methods;
-	(void)flag_autoindex;
-	(void)flag_max_size;
 	if ((i + 1) > parameter.size())
 		throw ErrorException("Missing value for cgi_path");
 	if (new_location.getPath() != "/cgi-bin")
@@ -652,25 +627,20 @@ void ServerConfig::handleCgiPath(size_t& i, Location& new_location, std::vector<
 	new_location.setCgiPath(path);
 }
 
-void ServerConfig::handleClientMaxBodySize(size_t& i, Location& new_location, std::vector<std::string>& parameter, bool& flag_methods, bool& flag_autoindex, bool& flag_max_size)
+void ServerConfig::handleClientMaxBodySize(size_t& i, Location& new_location, std::vector<std::string>& parameter)
 {
-	(void)flag_methods;
-	(void)flag_autoindex;
 	if ((i + 1) > parameter.size())
 		throw ErrorException("Missing value for client max body size");
-	if (flag_max_size) //check if max body size already set
+	if (new_location.getMaxSizeFlag()) //check if max body size already set
 		throw ErrorException("Maxbody_size of location is duplicated");
 	checkToken(parameter[++i]);
 	new_location.setMaxBodySize(parameter[i]);
-	flag_max_size = true;
+	new_location.setMaxSizeFlag(true);
 }
 
-void ServerConfig::handleAllowIP(size_t& i, Location& new_location, std::vector<std::string>& parameter, bool& flag_methods, bool& flag_autoindex, bool& flag_max_size)
+void ServerConfig::handleAllowIP(size_t& i, Location& new_location, std::vector<std::string>& parameter)
 {
 
-	(void)flag_methods;
-	(void)flag_autoindex;
-	(void)flag_max_size;
 	if ((i + 1) > parameter.size())
 		throw ErrorException("Missing value for allow");
 	new_location.setAllowFlag(true);
@@ -695,11 +665,8 @@ void ServerConfig::handleAllowIP(size_t& i, Location& new_location, std::vector<
 	
 }
 
-void ServerConfig::handleDenyIP(size_t& i, Location& new_location, std::vector<std::string>& parameter, bool& flag_methods, bool& flag_autoindex, bool& flag_max_size)
+void ServerConfig::handleDenyIP(size_t& i, Location& new_location, std::vector<std::string>& parameter)
 {
-	(void)flag_methods;
-	(void)flag_autoindex;
-	(void)flag_max_size;
 	if ((i + 1) > parameter.size())
 		throw ErrorException("Missing value for deny");
 	new_location.setDenyFlag(true);

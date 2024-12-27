@@ -6,7 +6,7 @@
 /*   By: jyap <jyap@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/15 22:58:25 by jyap              #+#    #+#             */
-/*   Updated: 2024/12/26 14:30:42 by jyap             ###   ########.fr       */
+/*   Updated: 2024/12/27 11:23:55 by jyap             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,6 +30,9 @@ Location::Location()
 	this->_methods.push_back(0);
 	this->allow_flag = false;
 	this->deny_flag = false;
+	this->methods_flag = false;
+	this->autoindex_flag = false;
+	this->maxsize_flag = false;
 }
 
 Location::Location(const Location &other)
@@ -56,6 +59,9 @@ Location &Location::operator=(const Location &rhs)
 		this->deny_flag = rhs.deny_flag;
 		this->allowIP = rhs.allowIP;
 		this->denyIP = rhs.denyIP;
+		this->methods_flag = rhs.methods_flag;
+		this->maxsize_flag = rhs.maxsize_flag;
+		this->autoindex_flag = rhs.autoindex_flag;
 	}
 	return (*this);
 }
@@ -139,6 +145,21 @@ void Location::setAllowFlag(bool parameter)
 void Location::setDenyFlag(bool parameter)
 {
 	this->deny_flag = parameter;
+}
+
+void Location::setAutoIndexFlag(bool parameter)
+{
+	this->autoindex_flag = parameter;
+}
+
+void Location::setMaxSizeFlag(bool parameter)
+{
+	this->maxsize_flag = parameter;
+}
+
+void Location::setMethodsFlag(bool parameter)
+{
+	this->methods_flag = parameter;
 }
 
 void Location::setMaxBodySize(std::string parameter)
@@ -225,6 +246,21 @@ const std::map<std::string, std::string> &Location::getExtensionPath() const
 const unsigned long &Location::getMaxBodySize() const
 {
 	return (this->_client_max_body_size);
+}
+
+const bool &Location::getMethodsFlag() const
+{
+	return (this->methods_flag);
+}
+
+const bool &Location::getAutoIndexFlag() const
+{
+	return (this->autoindex_flag);
+}
+
+const bool &Location::getMaxSizeFlag() const
+{
+	return (this->maxsize_flag);
 }
 
 //print allowed methods for Location

@@ -6,7 +6,7 @@
 /*   By: jyap <jyap@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/15 22:47:57 by jyap              #+#    #+#             */
-/*   Updated: 2024/12/21 22:11:15 by jyap             ###   ########.fr       */
+/*   Updated: 2024/12/27 11:33:26 by jyap             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,6 +38,7 @@ class ConfigParser
 		void checkServers();
 		std::vector<ServerConfig>	getServers();
 		int print();
+		void finalizeServerConfig(ServerConfig &server, const std::vector<std::string> &error_codes);
 		
 		class ErrorException : public std::exception
 		{

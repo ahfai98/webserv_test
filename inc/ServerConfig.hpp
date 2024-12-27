@@ -6,7 +6,7 @@
 /*   By: jyap <jyap@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/15 22:51:47 by jyap              #+#    #+#             */
-/*   Updated: 2024/12/26 23:32:10 by jyap             ###   ########.fr       */
+/*   Updated: 2024/12/27 11:32:56 by jyap             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,7 @@ class Location;
 
 class ServerConfig
 {
-	typedef void (ServerConfig::*Handler)(size_t&, Location&, std::vector<std::string>&, bool&, bool&, bool&);
+	typedef void (ServerConfig::*Handler)(size_t&, Location&, std::vector<std::string>&);
 	std::map<std::string, Handler> handlers;
 	private:
 		uint16_t						_port; //port number the server listens to
@@ -48,7 +48,7 @@ class ServerConfig
 		void setFd(int);
 		void setPort(std::string parameter);
 		void setClientMaxBodySize(std::string parameter);
-		void setErrorPages(std::vector<std::string> &parameter);
+		void setErrorPages(const std::vector<std::string> &parameter);
 		void setIndex(std::string index);
 		void setLocation(std::string nameLocation, std::vector<std::string> parameter);
 		void setAutoindex(std::string autoindex);
@@ -69,27 +69,27 @@ class ServerConfig
 		static void checkToken(std::string &parameter);
 		bool checkLocationsDup() const;
 		
-		void handleRoot(size_t& i, Location& new_location, std::vector<std::string>& parameter,bool& flag_methods, bool& flag_autoindex, bool& flag_max_size);
+		void handleRoot(size_t& i, Location& new_location, std::vector<std::string>& parameter);
 		
-		void handleAllowMethods(size_t& i, Location& new_location, std::vector<std::string>& parameter, bool& flag_methods, bool& flag_autoindex, bool& flag_max_size);
+		void handleAllowMethods(size_t& i, Location& new_location, std::vector<std::string>& parameter);
 
-		void handleAutoIndex(size_t& i, Location& new_location, std::vector<std::string>& parameter, bool& flag_methods, bool& flag_autoindex, bool& flag_max_size);
+		void handleAutoIndex(size_t& i, Location& new_location, std::vector<std::string>& parameter);
 
-		void handleIndex(size_t& i, Location& new_location, std::vector<std::string>& parameter, bool& flag_methods, bool& flag_autoindex, bool& flag_max_size);
+		void handleIndex(size_t& i, Location& new_location, std::vector<std::string>& parameter);
 
-		void handleAlias(size_t& i, Location& new_location, std::vector<std::string>& parameter, bool& flag_methods, bool& flag_autoindex, bool& flag_max_size);
+		void handleAlias(size_t& i, Location& new_location, std::vector<std::string>& parameter);
 
-		void handleReturn(size_t& i, Location& new_location, std::vector<std::string>& parameter, bool& flag_methods, bool& flag_autoindex, bool& flag_max_size);
+		void handleReturn(size_t& i, Location& new_location, std::vector<std::string>& parameter);
 
-		void handleCgiExt(size_t& i, Location& new_location, std::vector<std::string>& parameter, bool& flag_methods, bool& flag_autoindex, bool& flag_max_size);
+		void handleCgiExt(size_t& i, Location& new_location, std::vector<std::string>& parameter);
 
-		void handleCgiPath(size_t& i, Location& new_location, std::vector<std::string>& parameter, bool& flag_methods, bool& flag_autoindex, bool& flag_max_size);
+		void handleCgiPath(size_t& i, Location& new_location, std::vector<std::string>& parameter);
 
-		void handleClientMaxBodySize(size_t& i, Location& new_location, std::vector<std::string>& parameter, bool& flag_methods, bool& flag_autoindex, bool& flag_max_size);
+		void handleClientMaxBodySize(size_t& i, Location& new_location, std::vector<std::string>& parameter);
 
-		void handleAllowIP(size_t& i, Location& new_location, std::vector<std::string>& parameter, bool& flag_methods, bool& flag_autoindex, bool& flag_max_size);
+		void handleAllowIP(size_t& i, Location& new_location, std::vector<std::string>& parameter);
 
-		void handleDenyIP(size_t& i, Location& new_location, std::vector<std::string>& parameter, bool& flag_methods, bool& flag_autoindex, bool& flag_max_size);
+		void handleDenyIP(size_t& i, Location& new_location, std::vector<std::string>& parameter);
 		
 		class ErrorException : public std::exception
 		{

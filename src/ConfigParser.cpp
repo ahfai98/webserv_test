@@ -6,7 +6,7 @@
 /*   By: jyap <jyap@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/21 18:12:30 by jyap              #+#    #+#             */
-/*   Updated: 2024/12/25 22:07:54 by jyap             ###   ########.fr       */
+/*   Updated: 2024/12/27 11:31:24 by jyap             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -96,36 +96,67 @@ int ConfigParser::createCluster(const std::string &config_file)
 	return (0);
 }
 
-/*remove comments from char # to \n */
 void ConfigParser::removeComments(std::string &content)
 {
-	size_t pos;
-
-	pos = content.find('#');
+	size_t pos = content.find('#');
 	while (pos != std::string::npos)
 	{
-		size_t pos_end;
-		pos_end = content.find('\n', pos);
-		content.erase(pos, pos_end - pos);
+		// Find the end of the line or the end of the string
+		size_t pos_end = content.find('\n', pos);
+		if (pos_end == std::string::npos) 
+		{
+			// If no newline is found, erase until the end of the string
+			content.erase(pos);
+			break;
+		}
+		else 
+			// Erase from '#' to the newline character
+			content.erase(pos, pos_end - pos);
 		pos = content.find('#');
 	}
 }
 
-/* deleting whitespaces in the start, end and in the content if more than one */
 void ConfigParser::removeWhiteSpace(std::string &content)
 {
-	size_t	i = 0;
+	// Trim leading whitespace
+	size_t start = 0;
+	while (start < content.length() && isspace(content[start]))
+		start++;
+	content = content.substr(start);
 
-	while (content[i] && isspace(content[i]))
-		i++;
-	content = content.substr(i);
-	i = content.length() - 1;
-	while (i > 0 && isspace(content[i]))
-		i--;
-	content = content.substr(0, i + 1);
+	// Trim trailing whitespace
+	if (!content.empty()) 
+	{
+		size_t end = content.length() - 1;
+		while (end > 0 && isspace(content[end]))
+			end--;
+		content = content.substr(0, end + 1);
+	}
+
+	// Reduce consecutive spaces in the content to a single space
+	std::string result;
+	bool in_space = false;
+	for (size_t i = 0; i < content.length(); ++i) 
+	{
+		if (isspace(content[i])) 
+		{
+			if (!in_space) 
+			{
+				result += ' '; // Add a single space
+				in_space = true;
+			}
+		} 
+		else 
+		{
+			result += content[i];
+			in_space = false;
+		}
+	}
+
+	content = result;
 }
 
-/* spliting servers on separetly strings in vector */
+//split config's server blocks and store in vector of ServerConfig
 void ConfigParser::splitServers(std::string &content)
 {
 	size_t start = 0;
@@ -133,85 +164,87 @@ void ConfigParser::splitServers(std::string &content)
 
 	if (content.find("server", 0) == std::string::npos)
 		throw ErrorException("No server block found");
-	while (start != end && start < content.length())
+
+	while (start < content.length())
 	{
+		// Find the start of the server block
 		start = findStartServer(start, content);
+		// Find the end of the server block
 		end = findEndServer(start, content);
-		if (start == end)
-			throw ErrorException("problem with scope");
+		if (start >= end)
+			throw ErrorException("Problem with scope");
+		// Add the server block to the configuration
 		this->_server_config.push_back(content.substr(start, end - start + 1));
 		this->_nb_server++;
-		start = end + 1;
+		start = end + 1; //Move to next server block
 	}
 }
 
-/* finding a server begin and return the index of { start of server */
-size_t ConfigParser::findStartServer (size_t start, std::string &content)
+// returns the index of the "{" at the start of a server block
+size_t ConfigParser::findStartServer(size_t start, std::string &content)
 {
-	size_t i;
+	size_t i = start;
+	while (i < content.length() && isspace(content[i]))
+		i++; // Skip whitespace and find the start of "server"
 
-	for (i = start; content[i]; i++)
-	{
-		if (content[i] == 's')
-			break ;
-		if (!isspace(content[i]))
-			throw  ErrorException("Wrong character out of server scope{}");
-	}
-	if (!content[i])
-		return (start);
-	if (content.compare(i, 6, "server") != 0)
+	if (i >= content.length() || content.compare(i, 6, "server") != 0)
 		throw ErrorException("Wrong character out of server scope{}");
-	i += 6;
-	while (content[i] && isspace(content[i]))
-		i++;
-	if (content[i] == '{')
-		return (i);
-	else
-		throw  ErrorException("Wrong character out of server scope{}");
-
+	i += 6; // Move past server
+	while (i < content.length() && isspace(content[i]))
+		i++; // Skip whitespace after "server"
+	// Ensure the block starts with '{'
+	if (i >= content.length() || content[i] != '{')
+		throw ErrorException("Missing '{' after server declaration");
+	return (i); //returns index of "{"
 }
 
-/* finding a server end and return the index of } end of server */
-size_t ConfigParser::findEndServer (size_t start, std::string &content)
+// returns the index of } at the end of server block */
+size_t ConfigParser::findEndServer(size_t start, std::string &content)
 {
-	size_t	i;
-	size_t	scope;
-	
-	scope = 0;
-	for (i = start + 1; content[i]; i++)
+	size_t i = start + 1; // Start after the '{'
+	int scope = 0;
+	while (i < content.length())
 	{
 		if (content[i] == '{')
 			scope++;
-		if (content[i] == '}')
+		else if (content[i] == '}')
 		{
-			if (!scope)
-				return (i);
+			if (scope == 0)
+				return (i); // End of the server block
 			scope--;
 		}
+		i++;
 	}
-	return (start);
+	// If no closing '}' is found, throw an exception
+	throw ErrorException("Unmatched '{' in server block");
 }
 
-/* spliting line by separator */
-std::vector<std::string> splitparameters(std::string line, std::string sep)
+
+std::vector<std::string> splitparameters(const std::string &line, const std::string &sep)
 {
-	std::vector<std::string>	str;
-	std::string::size_type		start, end;
+	std::vector<std::string> result;
+	std::string::size_type start = 0;
+	std::string::size_type end;
 
-	start = end = 0;
-	while (1)
+	while (start < line.length())
 	{
+		// Find the first occurrence of any separator
 		end = line.find_first_of(sep, start);
+		// Extract the substring between start and end
 		if (end == std::string::npos)
+		{
+			result.push_back(line.substr(start));
 			break;
-		std::string tmp = line.substr(start, end - start);
-		str.push_back(tmp);
+		}
+		if (end > start)// Avoid adding empty substrings
+			result.push_back(line.substr(start, end - start));
+
+		// Move start to the next non-separator character
 		start = line.find_first_not_of(sep, end);
-		if (start == std::string::npos)
-			break;
 	}
-	return (str);
+	return (result);
 }
+
 
 /* creating Server from string and fill the value */
 void ConfigParser::createServer(std::string &config, ServerConfig &server)
@@ -308,6 +341,11 @@ void ConfigParser::createServer(std::string &config, ServerConfig &server)
 				throw  ErrorException("Unsupported directive");
 		}
 	}
+	finalizeServerConfig(server, error_codes);
+}
+
+void ConfigParser::finalizeServerConfig(ServerConfig &server, const std::vector<std::string> &error_codes)
+{
 	if (server.getRoot().empty())
 		server.setRoot("/;");
 	if (server.getHost() == 0)
@@ -317,12 +355,12 @@ void ConfigParser::createServer(std::string &config, ServerConfig &server)
 	if (fileExistReadable(server.getRoot(), server.getIndex()))
 		throw ErrorException("Index from config file not found or unreadable");
 	if (server.checkLocationsDup())
-		throw ErrorException("Location is duplicated");
+		throw ErrorException("Duplicate locations in server configuration");
 	if (!server.getPort())
-		throw ErrorException("Port not found");
+		throw ErrorException("Port not found in server configuration");
 	server.setErrorPages(error_codes);
 	if (!server.isValidErrorPages())
-		throw ErrorException("Incorrect path for error page or number of error");
+		throw ErrorException("Invalid error pages in server configuration");
 }
 
 /* checking repeat and mandatory parameters*/

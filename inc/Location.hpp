@@ -6,7 +6,7 @@
 /*   By: jyap <jyap@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/15 22:57:14 by jyap              #+#    #+#             */
-/*   Updated: 2024/12/26 14:30:25 by jyap             ###   ########.fr       */
+/*   Updated: 2024/12/27 11:21:57 by jyap             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,6 +34,9 @@ class Location
 		bool						deny_flag;
 		std::vector<IPRange>		allowIP;
 		std::vector<IPRange>		denyIP;
+		bool						methods_flag;
+		bool						autoindex_flag;
+		bool						maxsize_flag;
 
 	public:
 		std::map<std::string, std::string> _ext_path;
@@ -60,6 +63,9 @@ class Location
 		void appendDenyIP(const IPRange &parameter);
 		bool isIPAllowed(const std::string &clientIP);
 		bool isIPDenied(const std::string &clientIP);
+		void setAutoIndexFlag(bool parameter);
+		void setMethodsFlag(bool parameter);
+		void setMaxSizeFlag(bool parameter);
 
 		const std::string &getPath() const;
 		const std::string &getRootLocation() const;
@@ -73,6 +79,10 @@ class Location
 		const std::map<std::string, std::string> &getExtensionPath() const;
 		const unsigned long &getMaxBodySize() const;
 
+		const bool &getMethodsFlag() const;
+		const bool &getAutoIndexFlag() const;
+		const bool &getMaxSizeFlag() const;
+		
 		std::string getPrintMethods() const; // for checking only
 };
 
