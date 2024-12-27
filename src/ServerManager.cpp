@@ -6,7 +6,7 @@
 /*   By: jyap <jyap@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/21 22:36:59 by jyap              #+#    #+#             */
-/*   Updated: 2024/12/26 20:25:52 by jyap             ###   ########.fr       */
+/*   Updated: 2024/12/27 15:04:08 by jyap             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,40 +15,42 @@
 ServerManager::ServerManager(){}
 ServerManager::~ServerManager(){}
 
-/**
- * Start all servers on ports specified in the config file
- */
-void	ServerManager::setupServers(std::vector<ServerConfig> servers)
+void ServerManager::setupServers(std::vector<ServerConfig> servers)
 {
 	std::cout << std::endl;
-	Logger::logMsg(LIGHTMAGENTA, "Initializing  Servers...");
+	Logger::logMsg(LIGHTMAGENTA, "Initializing Servers...");
 	_servers = servers;
-	char buf[INET_ADDRSTRLEN];
-	bool	serverdup;
-	for (std::vector<ServerConfig>::iterator it = _servers.begin(); it != _servers.end(); ++it)
+	bool serverdup;
+	for (size_t i = 0; i < _servers.size(); ++i)
 	{
 		serverdup = false;
-		for (std::vector<ServerConfig>::iterator it2 = _servers.begin(); it2 != it; ++it2)
+		for (size_t j = 0; j < i; ++j)
 		{
-			if (it2->getHost() == it->getHost() && it2->getPort() == it->getPort())
+			// Compare host (in_addr_t) and port directly
+			if (_servers[j].getHost() == _servers[i].getHost() &&
+				_servers[j].getPort() == _servers[i].getPort())
 			{
-				it->setFd(it2->getFd());
+				_servers[i].setFd(_servers[j].getFd());
 				serverdup = true;
+				break;
 			}
 		}
 		if (!serverdup)
-			it->setupServerSocket();
-		//inet_ntop converts an IP address from binary format to string
+			_servers[i].setupServerSocket();
+		////inet_ntop converts an IP address from binary format to string
 		//inet_ntop(int af, const void *src, char *dst, socklen_t size)
 		// af: address family, AF_INET for IPv4, AF_INET6 for IPv6
 		// src: A pointer to the buffer containing the IP address in binary format
 		// dst: A pointer to the character array where the result is stored.
 		// size: size of the destination buffer. Must be large enough to hold result string. For IPv4 at least INET_ADDSTRLEN. Defined as 16 in <netinet/in.h>
 		// Returns dst, or NULL if fail
-		Logger::logMsg(LIGHTMAGENTA, "Server Created: ServerName[%s] Host[%s] Port[%d]",it->getServerName().c_str(),
-				inet_ntop(AF_INET, &it->getHost(), buf, INET_ADDRSTRLEN), it->getPort());
+		char buf[INET_ADDRSTRLEN];
+		Logger::logMsg(LIGHTMAGENTA, "Server Created: ServerName[%s] Host[%s] Port[%d]",
+			_servers[i].getServerName().c_str(),
+			inet_ntop(AF_INET, &_servers[i].getHost(), buf, INET_ADDRSTRLEN),
+			_servers[i].getPort());
 	}
- }
+}
 
 /**
  * Runs main loop that goes through all file descriptors from 0 till the biggest fd in the set.
